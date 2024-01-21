@@ -1,0 +1,13 @@
+[package]
+name = "transactions"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+dotenv = "0.15.0"
+ethers = { version = "2.0.11", features = ["abigen-online"] }
+eyre = "0.6.11"
+reqwest = "0.11.23"
+tokio = { version = "1.35.1", features = ["full"] }
