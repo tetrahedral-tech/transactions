@@ -6,7 +6,6 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-clokwerk = "0.4.0"
 dotenv = "0.15.0"
 ethers = { version = "2.0.11", features = ["abigen-online"] }
 eyre = "0.6.11"
@@ -15,3 +14,6 @@ tokio = { version = "1.35.1", features = ["full"] }
 shared = { git = "https://github.com/auto-trading-temp-name/shared-rust.git" }
 chrono = "0.4.31"
 dotenvy = "0.15.7"
+actix-web = "4.4.1"
+serde = { version = "1.0.195", features = ["std"] }
+mongodb = "2.8.0"
