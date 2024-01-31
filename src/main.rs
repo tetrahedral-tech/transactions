@@ -98,6 +98,7 @@ async fn price_update(
 async fn main() -> Result<()> {
 	dotenvy::dotenv().expect(".env should exist");
 
+	env::var("INFURA_SECRET").expect("INFURA_SECRET should be in .env");
 	let db_uri = env::var("DB_URI").expect("DB_URI should be in .env");
 	let database = Client::with_uri_str(db_uri).await?.database("database");
 

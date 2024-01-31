@@ -1,11 +1,11 @@
-use std::env;
+use std::{env, str::FromStr};
 
 use ethers::{
 	prelude::Http,
 	providers::Provider,
 	types::{transaction::eip2718::TypedTransaction, Address},
 };
-use eyre::Result;
+use eyre::{Context, Result};
 use serde::Deserialize;
 use shared::coin::Coin;
 
@@ -13,6 +13,9 @@ use crate::blockchain::{
 	account::{Account, Unlocked},
 	TradeProvider, Transaction, TransactionInfo,
 };
+
+const QUOTER_ADDRESS: &str = "0x61fFE014bA17989E743c5F6cB21bF9697530B21e";
+const SWAP_ROUTER_ADDRESS: &str = "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45";
 
 pub struct UniswapProvider {
 	provider: Provider<Http>,
@@ -36,11 +39,14 @@ impl TradeProvider for UniswapProvider {
 	}
 
 	fn new() -> Result<Self> {
-		let infura_secret = env::var("INFURA_SECRET").expect("INFURA_SECRET should be in .env");
+		let infura_secret = env::var("INFURA_SECRET").wrap_err("INFURA_SECRET should be in .env")?;
 		let transport_url = format!("https://mainnet.infura.io/v3/{infura_secret}");
-		Provider::<Http>::try_from(transport_url)?;
 
-		todo!();
+		Ok(Self {
+			provider: Provider::<Http>::try_from(transport_url)?,
+			quoter: Address::from_str(QUOTER_ADDRESS)?,
+			swap_router: Address::from_str(SWAP_ROUTER_ADDRESS)?,
+		})
 	}
 }
 
