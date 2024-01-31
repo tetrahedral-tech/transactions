@@ -1,35 +1,35 @@
-use ethers::types::{transaction::eip2718::TypedTransaction, Address};
+pub mod account;
+pub mod providers;
+
+use ethers::types::{transaction::eip2718::TypedTransaction, Address, U256};
 use eyre::Result;
+use serde::Deserialize;
 use shared::coin::Coin;
 
-pub trait VerifyTransaction {
+use crate::Account;
+
+use self::account::Unlocked;
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct TransactionInfo {
+	pub amount_input: U256,
+	pub token_in: Coin,
+	pub token_out: Coin,
+}
+pub trait Transaction {
 	fn verify(&self, tx: TypedTransaction) -> Result<()>;
+	fn new(info: TransactionInfo) -> Self;
 }
 
 pub trait TradeProvider {
-	fn swap(&self, transaction: Transaction) -> Result<TypedTransaction>;
-	fn get_price(&self, base_coin: Coin, coin: Coin) -> Result<u32>;
-	fn get_net_worth(&self, base_coin: Coin, address: Address) -> Result<u32>;
-	fn name(&self) -> String;
-}
-
-pub struct Transaction {
-	address: Address,
-	amount_input: u32,
-	token_in: Coin,
-	token_out: Coin,
-}
-
-pub struct UniswapTransaction {
-	transaction: Transaction,
-}
-
-impl VerifyTransaction for UniswapTransaction {
-	fn verify(&self, _tx: TypedTransaction) -> Result<()> {
-		Ok(()) // @TODO implement transaction verification
-	}
-}
-
-pub struct Provider {
-	name: String,
+	fn swap<T: Transaction>(
+		&self,
+		transaction: &T,
+		account: &Account<Unlocked>,
+	) -> Result<TypedTransaction>;
+	fn price(&self, base_coin: &Coin, coin: &Coin) -> Result<u32>;
+	fn combined_balance(&self, base_coin: &Coin, address: &Address) -> Result<u32>;
+	fn new() -> Result<Self>
+	where
+		Self: std::marker::Sized;
 }
