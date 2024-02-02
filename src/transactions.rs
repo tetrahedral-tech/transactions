@@ -1,4 +1,3 @@
-use ethers::{prelude::*, utils::parse_units};
 use eyre::{ContextCompat, Report, Result};
 use mongodb::{bson::oid::ObjectId, Database};
 use shared::coin::Coin;
@@ -35,24 +34,14 @@ pub async fn run_transactions(base_coin: &Coin, coin: &Coin, database: &Database
 			}
 		}
 
-		let amount_input = U256::from(parse_units(10.0, pair.0.decimals)?);
-
-		let pair_clone_1 = pair.clone();
-		let pair_clone_2 = pair.clone();
+		let pair_clone = pair.clone();
 
 		// @TODO use the provider's transaction type instead of only UniswapTransaction
 		let transaction = UniswapTransaction::new(TransactionInfo {
-			amount_input,
-			token_in: match algorithm_signal.signal {
-				TradeSignal::Buy => pair_clone_1.0,
-				TradeSignal::Sell => pair_clone_1.1,
-				TradeSignal::NoAction => Coin::empty(),
-			},
-			token_out: match algorithm_signal.signal {
-				TradeSignal::Buy => pair_clone_2.1,
-				TradeSignal::Sell => pair_clone_2.0,
-				TradeSignal::NoAction => Coin::empty(),
-			},
+			amount_input: 10.0,
+			token_base: pair_clone.0,
+			token_other: pair_clone.1,
+			trade_type: algorithm_signal.signal,
 		});
 
 		Ok(transaction)
@@ -88,7 +77,10 @@ pub async fn run_transactions(base_coin: &Coin, coin: &Coin, database: &Database
 			address, transaction
 		);
 
-		match provider.swap(&transaction, &unlocked_account.unwrap()) {
+		match provider
+			.swap(&transaction, &unlocked_account.unwrap())
+			.await
+		{
 			Ok(tx) => println!("transaction for {:#x} fulfilled: {:#?}", address, tx),
 			Err(error) => eprintln!(
 				"{}",

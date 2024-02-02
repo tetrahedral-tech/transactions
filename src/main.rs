@@ -16,7 +16,7 @@ use shared::{
 use crate::blockchain::account::Account;
 use crate::transactions::run_transactions;
 
-#[derive(Deserialize, Clone, Debug)]
+#[derive(Deserialize, Clone, Debug, Copy)]
 pub enum TradeSignal {
 	Buy,
 	Sell,
