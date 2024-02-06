@@ -12,11 +12,18 @@ pub struct Locked;
 #[derive(Clone, Debug, Deserialize)]
 pub struct Unlocked;
 
+#[derive(Clone, Debug, Deserialize)]
+pub struct Status {
+	pub name: String,
+	pub time: i64,
+}
+
 #[derive(Deserialize, Clone, Debug)]
 pub struct Account<State = Locked> {
 	pub address: Address,
 	pub algorithm: Option<ObjectId>,
 	pub coin: Coin,
+	pub status: Status,
 	private_key: String,
 	state: PhantomData<State>,
 }

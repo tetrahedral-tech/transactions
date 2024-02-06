@@ -7,7 +7,7 @@ use actix_web::{get, web::Data, App, HttpResponse, HttpServer, Responder};
 use chrono::Duration;
 use eyre::{Context, Result};
 use mongodb::{bson::doc, Client, Cursor, Database};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use shared::{
 	coin::{load_coins, Coin},
 	CustomInterval,
@@ -16,7 +16,7 @@ use shared::{
 use crate::blockchain::account::Account;
 use crate::transactions::run_transactions;
 
-#[derive(Deserialize, Clone, Debug, Copy)]
+#[derive(Deserialize, Serialize, Clone, Debug, Copy)]
 pub enum TradeSignal {
 	Buy,
 	Sell,

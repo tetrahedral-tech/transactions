@@ -17,4 +17,4 @@ dotenvy = "0.15.7"
 actix-web = "4.4.1"
 serde = { version = "1.0.195", features = ["std"] }
 mongodb = "2.8.0"
-async-trait = "0.1.77"
+serde_json = "1.0.113"
