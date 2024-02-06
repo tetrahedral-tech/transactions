@@ -14,7 +14,7 @@ use eyre::{Context, OptionExt, Result};
 
 use crate::blockchain::TransactionInfo;
 
-const CHAIN_ID: u16 = 0x01;
+const CHAIN_ID: u16 = 0x5;
 
 pub struct UniswapPool(ChildStdin, Provider<Http>);
 pub struct UniswapPoolEntry {
@@ -68,7 +68,7 @@ impl UniswapPool {
 
 	pub fn new() -> Result<Self> {
 		let infura_secret = env::var("INFURA_SECRET").wrap_err("INFURA_SECRET should be in .env")?;
-		let transport_url = format!("https://mainnet.infura.io/v3/{infura_secret}");
+		let transport_url = format!("https://goerli.infura.io/v3/{infura_secret}");
 		let transport_url = transport_url.as_str();
 
 		let provider = Provider::<Http>::try_from(transport_url)?;
