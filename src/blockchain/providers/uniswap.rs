@@ -11,18 +11,23 @@ use ethers::{
 	utils::hex::FromHex,
 };
 use eyre::{Context, OptionExt, Result};
+use futures_util::future::FutureExt;
+use tracing::{debug, info, instrument};
 
 use crate::blockchain::TransactionInfo;
 
 const CHAIN_ID: u16 = 0x5;
 
 pub struct UniswapPool(ChildStdin, Provider<Http>);
+
+#[derive(Debug, Clone)]
 pub struct UniswapPoolEntry {
 	calldata: Bytes,
 	value: U256,
 }
 
 impl UniswapPool {
+	#[instrument(err, skip(self))]
 	async fn execute_transaction(&self, entry: UniswapPoolEntry) -> Result<TransactionReceipt> {
 		let provider = &self.1;
 		let tx = TransactionRequest::new()
@@ -32,7 +37,7 @@ impl UniswapPool {
 		provider
 			.send_transaction(tx, None)
 			.await?
-			.log_msg("pending transaction")
+			.inspect(|tx| debug!(tx = ?tx, "pending transaction"))
 			.await?
 			.ok_or_eyre("no transaction")
 	}
@@ -49,9 +54,15 @@ impl UniswapPool {
 					Bytes::from_hex(split[0]),
 					U256::from_str_radix(split[1], 16),
 				) {
+					debug!("processing new transaction");
 					let entry = UniswapPoolEntry { calldata, value };
 
-					let _ = self.execute_transaction(entry);
+					let _ = self.execute_transaction(entry).then(|receipt| async {
+						match receipt {
+							Ok(receipt) => info!(receipt = ?receipt, "transaction completed"),
+							_ => {}
+						}
+					});
 				}
 			});
 
@@ -66,6 +77,7 @@ impl UniswapPool {
 		)
 	}
 
+	#[instrument(err, level = "debug")]
 	pub fn new() -> Result<Self> {
 		let infura_secret = env::var("INFURA_SECRET").wrap_err("INFURA_SECRET should be in .env")?;
 		let transport_url = format!("https://goerli.infura.io/v3/{infura_secret}");
@@ -82,6 +94,7 @@ impl UniswapPool {
 			.stdout(Stdio::piped())
 			.stdin(Stdio::piped())
 			.spawn()?;
+		debug!("spawned new transaction router");
 
 		let stdout = router.stdout.ok_or_eyre("no stdout")?;
 		let stdin = router.stdin.ok_or_eyre("no stdin")?;

@@ -21,7 +21,7 @@ pub struct Status {
 #[derive(Deserialize, Clone, Debug)]
 pub struct Account<State = Locked> {
 	pub address: Address,
-	pub algorithm: Option<ObjectId>,
+	pub algorithm: ObjectId,
 	pub coin: Coin,
 	pub status: Status,
 	private_key: String,

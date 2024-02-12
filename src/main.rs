@@ -12,6 +12,11 @@ use shared::{
 	coin::{load_coins, Coin},
 	CustomInterval,
 };
+use tracing::info;
+use tracing_bunyan_formatter::{BunyanFormattingLayer, JsonStorageLayer};
+use tracing_panic::panic_hook;
+use tracing_subscriber::layer::SubscriberExt;
+use tracing_subscriber::Registry;
 
 use crate::blockchain::account::Account;
 use crate::transactions::run_transactions;
@@ -81,7 +86,6 @@ async fn price_update(
 	let database = database.as_ref();
 
 	for coin in coins {
-		println!("running transactions for {}", coin.name);
 		match run_transactions(base_coin, coin, database)
 			.await
 			.wrap_err("error with transactions for coin {}")
@@ -96,13 +100,29 @@ async fn price_update(
 
 #[tokio::main]
 async fn main() -> Result<()> {
+	let subscriber = Registry::default()
+		.with(JsonStorageLayer)
+		.with(BunyanFormattingLayer::new(
+			"price-collector".into(),
+			std::fs::File::create("server.log")?,
+		))
+		.with(BunyanFormattingLayer::new(
+			"price-collector".into(),
+			std::io::stdout,
+		));
+
+	tracing::subscriber::set_global_default(subscriber).unwrap();
+	std::panic::set_hook(Box::new(panic_hook));
+
 	dotenvy::dotenv().expect(".env should exist");
 
 	env::var("INFURA_SECRET").expect("INFURA_SECRET should be in .env");
 	let db_uri = env::var("DB_URI").expect("DB_URI should be in .env");
+
 	let database = Client::with_uri_str(db_uri).await?.database("database");
 
-	let _ = HttpServer::new(move || {
+	let bind_to = ("0.0.0.0", 80);
+	let server_future = HttpServer::new(move || {
 		let (base_coin, coins) = load_coins();
 		App::new()
 			.app_data(Data::new(base_coin))
@@ -110,8 +130,13 @@ async fn main() -> Result<()> {
 			.app_data(Data::new(database.clone()))
 			.service(price_update)
 	})
-	.bind(("0.0.0.0", 80))?
-	.run()
-	.await;
+	.bind(bind_to)
+	.expect(format!("{}:{} should be available to bind to", bind_to.0, bind_to.1).as_str())
+	.run();
+
+	info!(host = bind_to.0, port = bind_to.1, "running server");
+
+	server_future.await?;
+
 	Ok(())
 }

@@ -18,3 +18,8 @@ actix-web = "4.4.1"
 serde = { version = "1.0.195", features = ["std"] }
 mongodb = "2.8.0"
 serde_json = "1.0.113"
+tracing = "0.1.40"
+tracing-panic = "0.1.1"
+tracing-subscriber = "0.3.18"
+tracing-bunyan-formatter = "0.3.9"
+futures-util = "0.3.30"
