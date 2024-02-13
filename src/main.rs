@@ -121,7 +121,7 @@ async fn main() -> Result<()> {
 
 	let database = Client::with_uri_str(db_uri).await?.database("database");
 
-	let bind_to = ("0.0.0.0", 80);
+	let bind = ("0.0.0.0", 80);
 	let server_future = HttpServer::new(move || {
 		let (base_coin, coins) = load_coins();
 		App::new()
@@ -130,11 +130,11 @@ async fn main() -> Result<()> {
 			.app_data(Data::new(database.clone()))
 			.service(price_update)
 	})
-	.bind(bind_to)
-	.expect(format!("{}:{} should be available to bind to", bind_to.0, bind_to.1).as_str())
+	.bind(bind)
+	.expect(format!("{}:{} should be available to bind to", bind.0, bind.1).as_str())
 	.run();
 
-	info!(host = bind_to.0, port = bind_to.1, "running server");
+	info!(host = bind.0, port = bind.1, "running server");
 
 	server_future.await?;
 
