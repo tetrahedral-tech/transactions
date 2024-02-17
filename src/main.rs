@@ -34,7 +34,7 @@ pub enum TradeSignal {
 pub struct AlgorithmSignal {
 	algorithm: String,
 	signal: TradeSignal,
-	strength: f32,
+	amount: f64,
 }
 
 // have to use Duration::milliseconds due to milliseconds (and micro/nanoseconds)

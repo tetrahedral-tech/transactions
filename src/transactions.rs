@@ -24,7 +24,7 @@ pub async fn run_transactions(database: &Database, provider: &str) -> Result<()>
 	                         pair: Pair,
 	                         algorithms: HashMap<String, AlgorithmSignal>|
 	 -> Result<TransactionInfo> {
-		let algorithm_signal = algorithms
+		let AlgorithmSignal { signal, amount, .. } = algorithms
 			.get(
 				algorithm_id_to_name
 					.get(&account.algorithm)
@@ -38,13 +38,13 @@ pub async fn run_transactions(database: &Database, provider: &str) -> Result<()>
 				account.algorithm, account.address
 			))?;
 
-		if let TradeSignal::NoAction = algorithm_signal.signal {
+		if let TradeSignal::NoAction = signal {
 			Err(eyre!("no action signal for {:#x}", account.address))?
 		}
 
 		let transaction = TransactionInfo {
-			amount: 10.0,
-			action: algorithm_signal.signal,
+			amount: *amount,
+			action: *signal,
 			pair,
 		};
 

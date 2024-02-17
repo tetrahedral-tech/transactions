@@ -19,9 +19,12 @@ use shared::{abis::ERC20, coin::Coin};
 use tokio::time::{sleep, timeout};
 use tracing::{debug, error, info, instrument, trace};
 
-use crate::blockchain::{
-	account::{Account, Locked},
-	chain_id, TradeProvider, TransactionInfo,
+use crate::{
+	blockchain::{
+		account::{Account, Locked},
+		chain_id, TradeProvider, TransactionInfo,
+	},
+	TradeSignal,
 };
 
 struct ChildGuard(Child);
@@ -97,7 +100,7 @@ async fn wait_for_connection(
 }
 
 impl UniswapProvider {
-	async fn approve(&self, coin: Coin, wallet: LocalWallet) -> Result<TransactionReceipt> {
+	async fn approve(&self, coin: &Coin, wallet: LocalWallet) -> Result<TransactionReceipt> {
 		let contract = ERC20::new(
 			coin.address,
 			self
@@ -122,7 +125,7 @@ impl UniswapProvider {
 		Ok(receipt)
 	}
 
-	async fn need_approval(&self, coin: Coin, account: Account) -> Result<bool> {
+	async fn need_approval(&self, coin: &Coin, account: &Account) -> Result<bool> {
 		let contract = ERC20::new(coin.address, self.0.clone().into());
 
 		let allowance: U256 = contract
@@ -184,14 +187,16 @@ impl TradeProvider for UniswapProvider {
 
 		let wallet = account.unlock()?.private_key().parse::<LocalWallet>()?;
 
-		// @TODO check if approvals ae neccesary
-		if self
-			.need_approval(transaction.pair.0.clone(), account)
-			.await?
-		{
-			let receipt = self
-				.approve(transaction.pair.0.clone(), wallet.clone())
-				.await?;
+		let approve_coin = {
+			match transaction.action {
+				TradeSignal::Buy => &transaction.pair.0,
+				TradeSignal::Sell => &transaction.pair.1,
+				TradeSignal::NoAction => panic!("no action when choosing approval coin"),
+			}
+		};
+
+		if self.need_approval(approve_coin, &account).await? {
+			let receipt = self.approve(approve_coin, wallet.clone()).await?;
 			info!(receipt = ?receipt, "approval completed");
 		}
 
