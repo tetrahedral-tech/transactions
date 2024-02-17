@@ -23,3 +23,7 @@ tracing-panic = "0.1.1"
 tracing-subscriber = "0.3.18"
 tracing-bunyan-formatter = "0.3.9"
 futures-util = "0.3.30"
+phf = { version = "0.11.2", features = ["macros"] }
+openssl = "0.10.63"
+async-trait = "0.1.77"
+faster-hex = "0.9.0"

@@ -1,26 +1,40 @@
-use eyre::{eyre, ContextCompat, Result};
+use std::collections::HashMap;
+
+use eyre::{eyre, OptionExt, Result};
 use mongodb::Database;
-use shared::coin::Coin;
-use tracing::{debug, error, info, instrument};
+use shared::coin::Pair;
+use tracing::{debug, error, instrument, warn};
 
 use crate::{
-	blockchain::{account::Account, providers::uniswap::UniswapPool, TransactionInfo},
-	get_account_cursor, get_algorithms, TradeSignal,
+	blockchain::{
+		account::Account, chain_id, providers::uniswap::UniswapProvider, TradeProvider, TransactionInfo,
+	},
+	get_account_cursor, get_algorithm_signals, get_algorithms, AlgorithmSignal, TradeSignal,
 };
 
 #[instrument(err, skip(database))]
-pub async fn run_transactions(base_coin: &Coin, coin: &Coin, database: &Database) -> Result<()> {
-	let algorithms = get_algorithms(coin).await?;
-	let mut accounts_cursor = get_account_cursor(database, coin).await?;
+pub async fn run_transactions(database: &Database, provider: &str) -> Result<()> {
+	let algorithm_id_to_name = get_algorithms(database).await?;
+	let mut accounts_cursor = get_account_cursor(database, provider).await?;
 
-	// @TODO make this use account.provider instead of only UniswapPool
-	let mut pool = UniswapPool::new()?;
+	// @TODO use other providers
+	let mut provider = UniswapProvider::new().await?;
 
-	let build_transaction = |account: &Account, pair: (Coin, Coin)| -> Result<TransactionInfo> {
+	let build_transaction = |account: &Account,
+	                         pair: Pair,
+	                         algorithms: HashMap<String, AlgorithmSignal>|
+	 -> Result<TransactionInfo> {
 		let algorithm_signal = algorithms
-			.get(&account.algorithm.to_string())
-			.wrap_err(format!(
-				"cannot find algorithm {} for {:#x}",
+			.get(
+				algorithm_id_to_name
+					.get(&account.algorithm)
+					.ok_or_eyre(format!(
+						"cannot find algorithm name {} for {:#x}",
+						account.algorithm, account.address
+					))?,
+			)
+			.ok_or_eyre(format!(
+				"cannot find algorithm signal {} for {:#x}",
 				account.algorithm, account.address
 			))?;
 
@@ -28,41 +42,39 @@ pub async fn run_transactions(base_coin: &Coin, coin: &Coin, database: &Database
 			Err(eyre!("no action signal for {:#x}", account.address))?
 		}
 
-		let pair_clone = pair.clone();
-
 		let transaction = TransactionInfo {
 			amount: 10.0,
 			action: algorithm_signal.signal,
-			token_base: pair_clone.0,
-			token_other: pair_clone.1,
+			pair,
 		};
 
 		Ok(transaction)
 	};
 
 	while accounts_cursor.advance().await? {
-		let account = accounts_cursor.deserialize_current()?;
-		if account.status.name != "running" {
-			debug!(account = ?account, "skipping not running account");
-			continue;
-		}
+		let account = match accounts_cursor.deserialize_current() {
+			Ok(account) => account,
+			Err(error) => {
+				error!(error = ?error, "error deserializing account");
+				continue;
+			}
+		};
+		// @TODO use other pairs
+		let pair = Pair::usdc_weth(Some(chain_id()));
+		let algorithms = get_algorithm_signals(&pair).await?;
 
-		let pair = (base_coin.clone(), coin.clone());
-
-		let transaction = match build_transaction(&account, pair) {
+		let transaction = match build_transaction(&account, pair, algorithms) {
 			Ok(transaction) => {
 				debug!(transaction = ?transaction, account = ?account, "built transaction");
 				transaction
 			}
 			Err(error) => {
-				error!(error = ?error, account = ?account, "error building transaction");
+				warn!(error = ?error, account = ?account, "error building transaction");
 				continue;
 			}
 		};
 
-		info!(transaction = ?transaction, account = ?account, "pushing transaction to pool");
-
-		let _ = pool.push(&transaction);
+		let _ = provider.transact(&transaction, account).await;
 	}
 
 	Ok(())
