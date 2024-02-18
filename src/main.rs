@@ -1,6 +1,8 @@
 pub mod blockchain;
 mod transactions;
 
+use std::fs;
+use std::path::Path;
 use std::{collections::HashMap, env};
 
 use actix_web::{get, web::Data, App, HttpResponse, HttpServer, Responder};
@@ -143,6 +145,7 @@ async fn main() -> Result<()> {
 
 	dotenvy::dotenv().expect(".env should exist");
 
+	fs::metadata("transaction-router/").expect("transaction-router/ should exist");
 	env::var("ROUTER_ADDRESS").expect("ROUTER_ADDRESS should be in .env");
 	env::var("INFURA_SECRET").expect("INFURA_SECRET should be in .env");
 	let db_uri = env::var("DB_URI").expect("DB_URI should be in .env");
