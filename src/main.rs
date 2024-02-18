@@ -122,7 +122,10 @@ async fn main() -> Result<()> {
 		.with(JsonStorageLayer)
 		.with(BunyanFormattingLayer::new(
 			"price-collector".into(),
-			std::fs::File::create("transaction.log")?,
+			std::fs::File::options()
+				.append(true)
+				.create(true)
+				.open("transactions.log")?,
 		))
 		.with(BunyanFormattingLayer::new(
 			"price-collector".into(),
