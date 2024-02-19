@@ -1,4 +1,4 @@
-FROM rust:1.76-bookworm as builder
+FROM rust:1.76-bookworm as rust-builder
 WORKDIR /app
 
 # Cache downloaded+built dependencies
@@ -14,16 +14,16 @@ RUN \
     touch src/main.rs && \
     cargo install --path .
 
-RUN apt-get update && apt-get install npm -y
-WORKDIR /app/transaction-router
+FROM node:21-bookworm-slim as node-builder
+WORKDIR /app/
 COPY transaction-router/package.json transaction-router/package-lock.json ./
 RUN npm install
 COPY transaction-router/ . 
 
-FROM debian:bookworm-slim
+FROM node:21-bookworm-slim
+RUN apt update && apt install ca-certificates -y
 WORKDIR /app
-RUN apt-get update && apt-get install ca-certificates nodejs -y
-COPY --from=builder /usr/local/cargo/bin/transactions transactions
-COPY --from=builder /app/transaction-router transaction-router
+COPY --from=rust-builder /usr/local/cargo/bin/transactions transactions
+COPY --from=node-builder /app transaction-router
 COPY .env .
 CMD ["/app/transactions"]
