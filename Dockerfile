@@ -1,11 +1,30 @@
-FROM rust:1.75-bullseye as builder
-WORKDIR /usr/src/transactions
-COPY . .
-RUN cargo install --path .
+FROM rust:1.76-bookworm as builder
+WORKDIR /app
 
-FROM debian:bullseye-slim
-RUN apt-get update && apt-get install ca-certificates nodejs npm -y
-COPY --from=builder /usr/local/cargo/bin/transactions /usr/local/bin/transactions
-COPY --from=builder /usr/src/transactions/transaction-router transaction-router
-COPY --from=builder /usr/src/transactions/.env .
-CMD ["transactions"]
+
+# Cache downloaded+built dependencies
+COPY Cargo.toml Cargo.lock ./
+RUN \
+    mkdir /app/src && \
+    echo 'fn main() {}' > /app/src/main.rs && \
+    cargo build --release && \
+    rm -Rvf /app/src
+
+COPY src src
+RUN \
+    touch src/main.rs && \
+    cargo install --path .
+
+RUN apt-get update && apt-get install npm -y
+WORKDIR /app/transaction-router
+COPY transaction-router/package.json transaction-router/package-lock.json ./
+RUN npm install
+COPY transaction-router/ . 
+
+FROM debian:bookworm-slim
+WORKDIR /app
+RUN apt-get update && apt-get install ca-certificates nodejs -y
+COPY --from=builder /usr/local/cargo/bin/transactions transactions
+COPY --from=builder /app/transaction-router transaction-router
+COPY .env .
+CMD ["/app/transactions"]
