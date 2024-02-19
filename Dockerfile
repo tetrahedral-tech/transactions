@@ -1,7 +1,6 @@
 FROM rust:1.76-bookworm as builder
 WORKDIR /app
 
-
 # Cache downloaded+built dependencies
 COPY Cargo.toml Cargo.lock ./
 RUN \
