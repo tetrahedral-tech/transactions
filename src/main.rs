@@ -2,7 +2,6 @@ pub mod blockchain;
 mod transactions;
 
 use std::fs;
-use std::path::Path;
 use std::{collections::HashMap, env};
 
 use actix_web::{get, web::Data, App, HttpResponse, HttpServer, Responder};
