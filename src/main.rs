@@ -129,7 +129,7 @@ async fn main() -> Result<()> {
 				.open("transactions.log")?,
 		))
 		.with(BunyanFormattingLayer::new(
-			"price-collector".into(),
+			"transactions".into(),
 			std::io::stdout,
 		));
 
