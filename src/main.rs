@@ -122,7 +122,7 @@ async fn main() -> Result<()> {
 	let subscriber = Registry::default()
 		.with(JsonStorageLayer)
 		.with(BunyanFormattingLayer::new(
-			"price-collector".into(),
+			"transactions".into(),
 			std::fs::File::options()
 				.append(true)
 				.create(true)
