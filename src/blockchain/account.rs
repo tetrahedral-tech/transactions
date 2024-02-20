@@ -18,6 +18,7 @@ pub struct Unlocked;
 pub struct Account<State = Locked> {
 	pub address: Address,
 	pub algorithm: ObjectId,
+	pub interval: u16,
 	pub pair: (String, String),
 	#[serde(rename = "encryptedPrivateKey")]
 	private_key: String,
@@ -52,6 +53,7 @@ impl Account<Locked> {
 		Ok(Account {
 			address: self.address,
 			algorithm: self.algorithm,
+			interval: self.interval,
 			pair: self.pair.clone(),
 			private_key: String::from_utf8(private_key)?,
 			state: PhantomData::<Unlocked>,

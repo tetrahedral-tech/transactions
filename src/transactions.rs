@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use eyre::{eyre, OptionExt, Result};
 use mongodb::Database;
 use shared::coin::Pair;
-use tracing::{debug, error, instrument, warn};
+use tracing::{debug, error, info, instrument, warn};
 
 use crate::{
 	blockchain::{
@@ -13,7 +13,7 @@ use crate::{
 };
 
 #[instrument(err, skip(database))]
-pub async fn run_transactions(database: &Database, provider: &str) -> Result<()> {
+pub async fn run_transactions(database: &Database, timestamp: i64, provider: &str) -> Result<()> {
 	let algorithm_id_to_name = get_algorithms(database).await?;
 	let mut accounts_cursor = get_account_cursor(database, provider).await?;
 
@@ -59,6 +59,12 @@ pub async fn run_transactions(database: &Database, provider: &str) -> Result<()>
 				continue;
 			}
 		};
+
+		if timestamp % account.interval as i64 != 0 {
+			info!("account interval not divisible by timestamp");
+			continue;
+		}
+
 		// @TODO use other pairs
 		let pair = Pair::usdc_weth(Some(chain_id()));
 		let algorithms = get_algorithm_signals(&pair).await?;

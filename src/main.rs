@@ -4,7 +4,7 @@ mod transactions;
 use std::fs;
 use std::{collections::HashMap, env};
 
-use actix_web::{get, web::Data, App, HttpResponse, HttpServer, Responder};
+use actix_web::{get, web, web::Data, App, HttpResponse, HttpServer, Responder};
 use chrono::Duration;
 use eyre::{eyre, Context, Result};
 use futures_util::TryStreamExt;
@@ -105,11 +105,11 @@ pub async fn get_account_cursor(database: &Database, provider: &str) -> Result<C
 }
 
 #[get("/price_update")]
-async fn price_update(database: Data<Database>) -> impl Responder {
+async fn price_update(database: Data<Database>, timestamp: web::Query<i64>) -> impl Responder {
 	let database = database.as_ref();
 
 	// @TODO use other providers
-	match run_transactions(database, "uniswap").await {
+	match run_transactions(database, *timestamp, "uniswap").await {
 		Ok(_) => info!("transactions completed"),
 		Err(error) => error!(error = ?error, "error with running transactions"),
 	}

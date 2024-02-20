@@ -30,6 +30,8 @@ pub struct TransactionInfo {
 
 #[async_trait]
 pub trait TradeProvider {
+	async fn verify(&self) -> Result<()>;
+
 	async fn transact(
 		&mut self,
 		transaction: &TransactionInfo,

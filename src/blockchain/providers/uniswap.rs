@@ -144,6 +144,12 @@ impl UniswapProvider {
 
 #[async_trait]
 impl TradeProvider for UniswapProvider {
+	async fn verify(&self) -> Result<()> {
+		// @TODO implement transaction verification
+		// balance + gas checks, sqrtPriceLimit checks, max/minOutChecks, ect
+		Ok(())
+	}
+
 	#[instrument(err, skip(self))]
 	async fn transact(
 		&mut self,
