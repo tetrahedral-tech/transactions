@@ -12,7 +12,8 @@ use mongodb::bson::oid::ObjectId;
 use mongodb::{bson::doc, Client, Cursor, Database};
 use serde::{Deserialize, Serialize};
 use shared::{coin::Pair, CustomInterval};
-use tracing::{error, info};
+use tracing::level_filters::LevelFilter;
+use tracing::{error, info, Level};
 use tracing_bunyan_formatter::{BunyanFormattingLayer, JsonStorageLayer};
 use tracing_panic::panic_hook;
 use tracing_subscriber::layer::SubscriberExt;
@@ -131,7 +132,8 @@ async fn main() -> Result<()> {
 		.with(BunyanFormattingLayer::new(
 			"transactions".into(),
 			std::io::stdout,
-		));
+		))
+		.with(LevelFilter::from_level(Level::DEBUG));
 
 	tracing::subscriber::set_global_default(subscriber)
 		.expect("setting global default subscriber should succeed");
