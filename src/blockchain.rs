@@ -10,14 +10,14 @@ use shared::coin::Pair;
 use self::account::{Account, Locked};
 use crate::TradeSignal;
 
-static CHAIN_NAME_TO_ID: Map<&'static str, u16> = phf_map! {
+static CHAIN_NAME_TO_ID: Map<&'static str, u64> = phf_map! {
 	"mainner" => 0x1,
 	"goerli" => 0x5,
 	"arbitrum" => 0xa4b1
 };
 const CURRENT_CHAIN_NAME: &'static str = "arbitrum";
 
-pub fn chain_id() -> u16 {
+pub fn chain_id() -> u64 {
 	*CHAIN_NAME_TO_ID
 		.get(CURRENT_CHAIN_NAME)
 		.expect("current chain name not in chain to name map")
