@@ -11,9 +11,11 @@ use self::account::{Account, Locked};
 use crate::TradeSignal;
 
 static CHAIN_NAME_TO_ID: Map<&'static str, u16> = phf_map! {
-	"goerli" => 0x5
+	"mainner" => 0x1,
+	"goerli" => 0x5,
+	"arbitrum" => 0xa4b1
 };
-const CURRENT_CHAIN_NAME: &'static str = "goerli";
+const CURRENT_CHAIN_NAME: &'static str = "arbitrum";
 
 pub fn chain_id() -> u16 {
 	*CHAIN_NAME_TO_ID
