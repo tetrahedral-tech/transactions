@@ -14,7 +14,7 @@ use shared::{coin::Pair, CustomInterval};
 use tracing::{error, info, level_filters::LevelFilter, Level};
 use tracing_bunyan_formatter::{BunyanFormattingLayer, JsonStorageLayer};
 use tracing_panic::panic_hook;
-use tracing_subscriber::{filter::FilterFn, layer::SubscriberExt, Layer, Registry};
+use tracing_subscriber::{layer::SubscriberExt, Layer, Registry};
 
 use crate::blockchain::account::Account;
 use crate::transactions::run_transactions;
@@ -124,6 +124,7 @@ async fn price_update(
 async fn main() -> Result<()> {
 	let name = "transactions";
 
+	// 400 character type :clueless:
 	let subscriber = Registry::default()
 		.with(JsonStorageLayer)
 		.with(BunyanFormattingLayer::new(

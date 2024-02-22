@@ -60,7 +60,7 @@ pub async fn run_transactions(database: &Database, timestamp: i64, provider: &st
 			}
 		};
 
-		if timestamp % account.interval as i64 != 0 {
+		if timestamp / 60 % account.interval as i64 != 0 {
 			info!("account interval not divisible by timestamp");
 			continue;
 		}

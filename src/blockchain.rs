@@ -41,5 +41,5 @@ pub trait TradeProvider {
 	) -> Result<()>;
 	async fn new() -> Result<Self>
 	where
-		Self: std::marker::Sized;
+		Self: Sized;
 }
