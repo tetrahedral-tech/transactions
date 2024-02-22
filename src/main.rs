@@ -43,12 +43,9 @@ pub const TRANSACTION_INTERVAL: CustomInterval =
 
 pub async fn get_algorithm_signals(pair: &Pair) -> Result<HashMap<String, AlgorithmSignal>> {
 	let url = format!(
-		// @TODO uncomment these once pair is used everywhere in algo server
-		// "{}/signals?pair={},{}&interval={}"
-		"{}/signals?coin={}&interval={}",
+		"{}/signals?pair={}&interval={}",
 		env::var("ALGORITHM_SERVER_URI").expect("ALGORITHM_SERVER_URI should be in .env"),
-		// pair.0.name,
-		pair.1.name,
+		pair.to_string(),
 		5 //@TODO use other intervals
 	);
 
@@ -102,12 +99,20 @@ pub async fn get_account_cursor(database: &Database, provider: &str) -> Result<C
 	Ok(cursor)
 }
 
+#[derive(Debug, Deserialize)]
+struct PriceUpdateTimestamp {
+	timestamp: i64,
+}
+
 #[get("/price_update")]
-async fn price_update(database: Data<Database>, timestamp: web::Query<i64>) -> impl Responder {
+async fn price_update(
+	database: Data<Database>,
+	query: web::Query<PriceUpdateTimestamp>,
+) -> impl Responder {
 	let database = database.as_ref();
 
 	// @TODO use other providers
-	match run_transactions(database, *timestamp, "uniswap").await {
+	match run_transactions(database, query.timestamp, "uniswap").await {
 		Ok(_) => info!("transactions completed"),
 		Err(error) => error!(error = ?error, "error with running transactions"),
 	}
@@ -130,7 +135,6 @@ async fn main() -> Result<()> {
 		))
 		.with(
 			BunyanFormattingLayer::new(name.into(), std::io::stdout)
-				.with_filter(FilterFn::new(move |metadata| metadata.target() == name))
 				.with_filter(LevelFilter::from_level(Level::DEBUG)),
 		);
 
@@ -148,7 +152,7 @@ async fn main() -> Result<()> {
 
 	let database = Client::with_uri_str(db_uri).await?.database("database");
 
-	let bind = ("0.0.0.0", 80);
+	let bind = ("0.0.0.0", 800);
 	let server = HttpServer::new(move || {
 		App::new()
 			.app_data(Data::new(database.clone()))
