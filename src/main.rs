@@ -117,7 +117,7 @@ async fn price_update(database: Data<Database>, timestamp: web::Query<i64>) -> i
 
 #[tokio::main]
 async fn main() -> Result<()> {
-	let name = "transactons";
+	let name = "transactions";
 
 	let subscriber = Registry::default()
 		.with(JsonStorageLayer)
