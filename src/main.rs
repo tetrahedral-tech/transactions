@@ -1,8 +1,7 @@
 pub mod blockchain;
 mod transactions;
 
-use std::fs;
-use std::{collections::HashMap, env};
+use std::{collections::HashMap, env, fs};
 
 use actix_web::{get, web, web::Data, App, HttpResponse, HttpServer, Responder};
 use chrono::Duration;
@@ -12,12 +11,10 @@ use mongodb::bson::oid::ObjectId;
 use mongodb::{bson::doc, Client, Cursor, Database};
 use serde::{Deserialize, Serialize};
 use shared::{coin::Pair, CustomInterval};
-use tracing::level_filters::LevelFilter;
-use tracing::{error, info, Level};
+use tracing::{error, info, level_filters::LevelFilter, Level};
 use tracing_bunyan_formatter::{BunyanFormattingLayer, JsonStorageLayer};
 use tracing_panic::panic_hook;
-use tracing_subscriber::layer::SubscriberExt;
-use tracing_subscriber::Registry;
+use tracing_subscriber::{filter::FilterFn, layer::SubscriberExt, Layer, Registry};
 
 use crate::blockchain::account::Account;
 use crate::transactions::run_transactions;
@@ -129,10 +126,11 @@ async fn main() -> Result<()> {
 				.create(true)
 				.open("transactions.log")?,
 		))
-		.with(BunyanFormattingLayer::new(
-			"transactions".into(),
-			std::io::stdout,
-		))
+		.with(
+			BunyanFormattingLayer::new("transactions".into(), std::io::stdout).with_filter(
+				FilterFn::new(|metadata| metadata.target() == "transactions"),
+			),
+		)
 		.with(LevelFilter::from_level(Level::DEBUG));
 
 	tracing::subscriber::set_global_default(subscriber)
