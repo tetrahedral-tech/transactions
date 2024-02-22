@@ -152,7 +152,7 @@ async fn main() -> Result<()> {
 
 	let database = Client::with_uri_str(db_uri).await?.database("database");
 
-	let bind = ("0.0.0.0", 800);
+	let bind = ("0.0.0.0", 80);
 	let server = HttpServer::new(move || {
 		App::new()
 			.app_data(Data::new(database.clone()))
