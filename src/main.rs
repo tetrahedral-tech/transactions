@@ -117,30 +117,27 @@ async fn price_update(database: Data<Database>, timestamp: web::Query<i64>) -> i
 
 #[tokio::main]
 async fn main() -> Result<()> {
+	let name = "transactons";
+
 	let subscriber = Registry::default()
 		.with(JsonStorageLayer)
 		.with(BunyanFormattingLayer::new(
-			"transactions".into(),
+			name.into(),
 			std::fs::File::options()
 				.append(true)
 				.create(true)
-				.open("transactions.log")?,
+				.open(format!("{}.log", name))?,
 		))
 		.with(
-			BunyanFormattingLayer::new("transactions".into(), std::io::stdout).with_filter(
-				FilterFn::new(|metadata| metadata.target() == "transactions"),
-			),
-		)
-		.with(LevelFilter::from_level(Level::DEBUG));
+			BunyanFormattingLayer::new(name.into(), std::io::stdout)
+				.with_filter(FilterFn::new(move |metadata| metadata.target() == name))
+				.with_filter(LevelFilter::from_level(Level::DEBUG)),
+		);
 
 	tracing::subscriber::set_global_default(subscriber)
 		.expect("setting global default subscriber should succeed");
 
-	let prev_hook = std::panic::take_hook();
-	std::panic::set_hook(Box::new(move |panic_info| {
-		panic_hook(panic_info);
-		prev_hook(panic_info);
-	}));
+	std::panic::set_hook(Box::new(panic_hook));
 
 	dotenvy::dotenv().expect(".env should exist");
 
