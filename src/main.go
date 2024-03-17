@@ -11,42 +11,11 @@ import (
 
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type AlgorithmResponse struct {
-	Algorithm string `json:"algorithm"`
-	Amount    int    `json:"amount"`
-	Signal    string `json:"signal"`
-}
-
-type Worth struct {
-	ID        string  `bson:"_id"`
-	Timestamp int     `bson:"timestamp"`
-	Value     float64 `bson:"value"`
-}
-
-type Status struct {
-	Name string `bson:"name"`
-	Time int    `bson:"time"`
-}
-
-type Bot struct {
-	ID                  primitive.ObjectID `bson:"_id"`
-	Owner               primitive.ObjectID `bson:"owner"`
-	Algorithm           primitive.ObjectID `bson:"algorithm"`
-	StrengthToUsd       int                `bson:"strengthToUSD"`
-	EncryptedPrivateKey string             `bson:"encryptedPrivateKey"`
-	Worth               []Worth            `bson:"worth"`
-	Status              Status             `bson:"status"`
-	Pair                []string           `bson:"pair"`
-	Provider            string             `bson:"provider"`
-	Interval            int                `bson:"interval"`
-}
-
-func fetchSignals(pair string, interval int16) ([]AlgorithmResponse, error) {
+func fetchSignals(pair string, interval int16) ([]AlgorithmSignal, error) {
 	url := fmt.Sprintf("http://127.0.0.1:5000/signals?pair=%s&interval=%d", pair, interval)
 
 	response, err := http.Get(url)
