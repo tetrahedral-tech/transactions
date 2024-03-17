@@ -60,7 +60,7 @@ func fetchSignals(pair string, interval int16) ([]AlgorithmResponse, error) {
 		return nil, err
 	}
 
-	var parsedResponses []AlgorithmResponse
+	var parsedResponses []AlgorithmSignal
 	err = json.Unmarshal(responseBody, &parsedResponses)
 	if err != nil {
 		return nil, err
