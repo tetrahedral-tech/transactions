@@ -27,14 +27,10 @@ type Status struct {
 	Time int    `bson:"time"`
 }
 
-type Bot struct {
+type Account struct {
 	ID                  primitive.ObjectID `bson:"_id"`
-	Owner               primitive.ObjectID `bson:"owner"`
 	Algorithm           primitive.ObjectID `bson:"algorithm"`
-	StrengthToUsd       int                `bson:"strengthToUSD"`
 	EncryptedPrivateKey string             `bson:"encryptedPrivateKey"`
-	Worth               []Worth            `bson:"worth"`
-	Status              Status             `bson:"status"`
 	Pair                []string           `bson:"pair"`
 	Provider            string             `bson:"provider"`
 	Interval            int                `bson:"interval"`
