@@ -15,13 +15,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type AlgorithmResponse struct {
-	Algorithm string `json:"algorithm"`
-	Amount    int    `json:"amount"`
-	Signal    string `json:"signal"`
-}
-
-func fetchSignals(pair string, interval int16) ([]AlgorithmResponse, error) {
+func fetchSignals(pair string, interval int16) ([]AlgorithmSignal, error) {
 	url := fmt.Sprintf("http://127.0.0.1:5000/signals?pair=%s&interval=%d", pair, interval)
 
 	response, err := http.Get(url)
@@ -35,7 +29,7 @@ func fetchSignals(pair string, interval int16) ([]AlgorithmResponse, error) {
 		return nil, err
 	}
 
-	var parsedResponses []AlgorithmResponse
+	var parsedResponses []AlgorithmSignal
 	err = json.Unmarshal(responseBody, &parsedResponses)
 	if err != nil {
 		return nil, err
