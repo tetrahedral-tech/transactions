@@ -16,12 +16,6 @@ type AlgorithmSignal struct {
 	Signal    string `json:"signal"`
 }
 
-type Worth struct {
-	ID        string  `bson:"_id"`
-	Timestamp int     `bson:"timestamp"`
-	Value     float64 `bson:"value"`
-}
-
 type Status struct {
 	Name string `bson:"name"`
 	Time int    `bson:"time"`
