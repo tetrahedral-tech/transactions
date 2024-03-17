@@ -15,7 +15,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func fetchSignals(pair string, interval int16) ([]AlgorithmSignal, error) {
+func getSignals(pair string, interval int16) ([]AlgorithmSignal, error) {
 	url := fmt.Sprintf("http://127.0.0.1:5000/signals?pair=%s&interval=%d", pair, interval)
 
 	response, err := http.Get(url)
@@ -45,7 +45,7 @@ func fetchSignals(pair string, interval int16) ([]AlgorithmSignal, error) {
 	return parsedResponses, nil
 }
 
-func getBots() (*mongo.Cursor, error) {
+func getBotCursor() (*mongo.Cursor, error) {
 	err := godotenv.Load(".env")
 	if err != nil {
 		return nil, err

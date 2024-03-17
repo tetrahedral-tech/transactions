@@ -11,31 +11,31 @@ const (
 )
 
 type AlgorithmSignal struct {
-	Algorithm string `json:"algorithm"`
-	Amount    int    `json:"amount"`
-	Signal    string `json:"signal"`
+	algorithm string `json:"algorithm"`
+	amount    int    `json:"amount"`
+	signal    string `json:"signal"`
 }
 
 type Worth struct {
-	ID        string  `bson:"_id"`
-	Timestamp int     `bson:"timestamp"`
-	Value     float64 `bson:"value"`
+	id        string  `bson:"_id"`
+	timestamp int     `bson:"timestamp"`
+	value     float64 `bson:"value"`
 }
 
 type Status struct {
-	Name string `bson:"name"`
-	Time int    `bson:"time"`
+	name string `bson:"name"`
+	time int    `bson:"time"`
 }
 
 type Bot struct {
-	ID                  primitive.ObjectID `bson:"_id"`
-	Owner               primitive.ObjectID `bson:"owner"`
-	Algorithm           primitive.ObjectID `bson:"algorithm"`
-	StrengthToUsd       int                `bson:"strengthToUSD"`
-	EncryptedPrivateKey string             `bson:"encryptedPrivateKey"`
-	Worth               []Worth            `bson:"worth"`
-	Status              Status             `bson:"status"`
-	Pair                []string           `bson:"pair"`
-	Provider            string             `bson:"provider"`
-	Interval            int                `bson:"interval"`
+	id                  primitive.ObjectID `bson:"_id"`
+	owner               primitive.ObjectID `bson:"owner"`
+	algorithm           primitive.ObjectID `bson:"algorithm"`
+	strengthToUsd       int                `bson:"strengthToUSD"`
+	encryptedPrivateKey string             `bson:"encryptedPrivateKey"`
+	worth               []Worth            `bson:"worth"`
+	status              Status             `bson:"status"`
+	pair                []string           `bson:"pair"`
+	provider            string             `bson:"provider"`
+	interval            int                `bson:"interval"`
 }
