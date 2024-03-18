@@ -8,6 +8,7 @@ require (
 )
 
 require (
+	github.com/beldur/kraken-go-api-client v0.0.0-20240207163059-7469c489f802 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/klauspost/compress v1.17.7 // indirect
 	github.com/montanaflynn/stats v0.7.1 // indirect
