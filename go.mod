@@ -1,4 +1,4 @@
-module tetrahedral.tech/transactions
+module transactions
 
 go 1.22.1
 
