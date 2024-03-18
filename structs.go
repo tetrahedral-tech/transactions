@@ -1,8 +1,6 @@
 package main
 
 import (
-	provider "transactions/provider"
-
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -16,7 +14,7 @@ const (
 
 type Coin struct {
 	Name string
-	supportedProviders []provider.TradeProvider
+	supportedProviders []string
 }
 
 type Pair struct {
