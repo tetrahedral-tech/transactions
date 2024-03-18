@@ -1,6 +1,10 @@
 package main
 
-import "go.mongodb.org/mongo-driver/bson/primitive"
+import (
+	provider "transactions/provider"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
 
 type TradeType int8
 
@@ -9,6 +13,16 @@ const (
 	Sell      TradeType = 1
 	NoAction  TradeType = 2
 )
+
+type Coin struct {
+	Name string
+	supportedProviders []provider.TradeProvider
+}
+
+type Pair struct {
+	A Coin
+	B Coin
+}
 
 type AlgorithmSignal struct {
 	Algorithm string `json:"algorithm"`
