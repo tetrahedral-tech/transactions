@@ -23,3 +23,7 @@ func Swap(apiKey string, apiSecret string, tradeType string, pair string, price 
 	fmt.Printf("Kraken api Response: %+v\n", response)
 
 }
+
+func Verify() bool {
+	return true
+}
