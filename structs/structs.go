@@ -1,15 +1,9 @@
-package main
+package structs
 
 import (
+	"fmt"
+
 	"go.mongodb.org/mongo-driver/bson/primitive"
-)
-
-type TradeType int8
-
-const (
-	Buy       TradeType = 0
-	Sell      TradeType = 1
-	NoAction  TradeType = 2
 )
 
 type Coin struct {
@@ -17,15 +11,17 @@ type Coin struct {
 	supportedProviders []string
 }
 
+func (coin Coin) String() string {
+	return coin.Name
+}
+
 type Pair struct {
 	A Coin
 	B Coin
 }
 
-type AlgorithmSignal struct {
-	Algorithm string `json:"algorithm"`
-	Amount    int    `json:"amount"`
-	Signal    string `json:"signal"`
+func (pair Pair) String() string {
+	return fmt.Sprintf("%s-%s", pair.A.String(), pair.B.String())
 }
 
 type Status struct {
@@ -37,7 +33,7 @@ type Account struct {
 	ID                  primitive.ObjectID `bson:"_id"`
 	Algorithm           primitive.ObjectID `bson:"algorithm"`
 	EncryptedPrivateKey string             `bson:"encryptedPrivateKey"`
-	Pair                []string           `bson:"pair"`
+	Pair                Pair               `bson:"pair"`
 	Provider            string             `bson:"provider"`
-	Interval            int                `bson:"interval"`
+	Interval            int16              `bson:"interval"`
 }
