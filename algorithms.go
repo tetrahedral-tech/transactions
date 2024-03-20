@@ -14,8 +14,8 @@ import (
 )
 
 type algorithm struct {
-	id   primitive.ObjectID `bson:"_id"`
-	name string             `bson:"name"`
+	Id   primitive.ObjectID `bson:"_id"`
+	Name string             `bson:"name"`
 }
 
 func getAlgorithmIdToNameMap(database mongo.Database) (map[primitive.ObjectID]string, error) {
@@ -34,7 +34,7 @@ func getAlgorithmIdToNameMap(database mongo.Database) (map[primitive.ObjectID]st
 			continue
 		}
 
-		idName[algorithm.id] = algorithm.name
+		idName[algorithm.Id] = algorithm.Name
 	}
 
 	if err := cursor.Err(); err != nil {
