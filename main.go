@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 
@@ -29,7 +30,9 @@ func priceUpdateHandlerWrapper(database mongo.Database) func(w http.ResponseWrit
 		fmt.Fprint(w, "")
 		fmt.Println("running transactions")
 		err := runTransactions(database)
-		fmt.Printf("error running transactions: %v", err)
+		if err != nil {
+			fmt.Printf("error running transactions: %v\n", err)
+		}
 	}
 }
 
@@ -56,6 +59,7 @@ func main() {
 
 	http.HandleFunc("/price_update", priceUpdateHandler)
 
-	fmt.Println("Server listening on http://localhost:8080")
-	http.ListenAndServe(":8080", nil)
+	address := "localhost:8080"
+	fmt.Printf("Server listening on %v\n", address)
+	log.Fatal(http.ListenAndServe(address, nil))
 }

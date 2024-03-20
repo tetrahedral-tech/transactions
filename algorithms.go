@@ -14,23 +14,31 @@ import (
 )
 
 type algorithm struct {
-	id primitive.ObjectID `bson:"_id"`
-	name string `bson:"name"`
+	id   primitive.ObjectID `bson:"_id"`
+	name string             `bson:"name"`
 }
 
 func getAlgorithmIdToNameMap(database mongo.Database) (map[primitive.ObjectID]string, error) {
 	idName := make(map[primitive.ObjectID]string)
 
-	cursor, err := database.Collection("algorithms").Find(context.Background(), bson.M {})
+	cursor, err := database.Collection("algorithms").Find(context.Background(), bson.M{})
 	if err != nil {
 		return nil, err
 	}
 
-	var results []algorithm
-	cursor.All(context.Background(), &results)
+	for cursor.Next(context.Background()) {
+		var algorithm algorithm
+		err := cursor.Decode(&algorithm)
+		if err != nil {
+			fmt.Printf("error decoding account: %v\n", err)
+			continue
+		}
 
-	for _, algorithm := range results {
 		idName[algorithm.id] = algorithm.name
+	}
+
+	if err := cursor.Err(); err != nil {
+		return nil, err
 	}
 
 	return idName, nil
@@ -43,7 +51,7 @@ func getSignals(pair structs.Pair, interval int16) (map[string]structs.Algorithm
 	if err != nil {
 		return nil, err
 	}
-	
+
 	defer response.Body.Close()
 	responseBody, err := io.ReadAll(response.Body)
 	if err != nil {

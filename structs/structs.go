@@ -6,24 +6,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type Coin struct {
-	Name string
-	supportedProviders []string
-}
-
-func (coin Coin) String() string {
-	return coin.Name
-}
-
-type Pair struct {
-	A Coin
-	B Coin
-}
-
-func (pair Pair) String() string {
-	return fmt.Sprintf("%s-%s", pair.A.String(), pair.B.String())
-}
-
 type Status struct {
 	Name string `bson:"name"`
 	Time int    `bson:"time"`
@@ -31,9 +13,17 @@ type Status struct {
 
 type Account struct {
 	ID                  primitive.ObjectID `bson:"_id"`
+	ProviderID          string             `bson:"address"` //@TODO update name
 	Algorithm           primitive.ObjectID `bson:"algorithm"`
-	EncryptedPrivateKey string             `bson:"encryptedPrivateKey"`
+	EncryptedPrivateKey string             `bson:"encryptedPrivateKey"` //@TODO update name
 	Pair                Pair               `bson:"pair"`
 	Provider            string             `bson:"provider"`
 	Interval            int16              `bson:"interval"`
+}
+
+type Coin string
+type Pair [2]Coin
+
+func (pair Pair) String() string {
+	return fmt.Sprintf("%s-%s", pair[0], pair[1])
 }

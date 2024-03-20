@@ -9,9 +9,9 @@ import (
 type TradeType int8
 
 const (
-	Buy       TradeType = 0
-	Sell      TradeType = 1
-	NoAction  TradeType = 2
+	NoAction TradeType = 0
+	Buy      TradeType = 1
+	Sell     TradeType = 2
 )
 
 type TransactionInfo struct {
@@ -31,14 +31,14 @@ func (s TradeType) String() string {
 }
 
 var toString = map[TradeType]string{
-	Buy: "buy",
-	Sell: "sell",
+	Buy:      "buy",
+	Sell:     "sell",
 	NoAction: "no_action",
 }
 
 var toID = map[string]TradeType{
-	"buy": Buy,
-	"sell": Sell,
+	"buy":       Buy,
+	"sell":      Sell,
 	"no_action": NoAction,
 }
 
@@ -57,7 +57,7 @@ func (s *TradeType) UnmarshalJSON(b []byte) error {
 	if err != nil {
 		return err
 	}
-	// Note that if the string cannot be found then it will be set to the zero value, 'Buy' in this case.
+	// Note that if the string cannot be found then it will be set to the zero value, 'NoAction' in this case.
 	*s = toID[j]
 	return nil
 }
