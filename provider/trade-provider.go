@@ -8,6 +8,8 @@ import (
 
 type TradeProvider interface {
 	Swap(account structs.Account, transaction structs.TransactionInfo) (*structs.TransactionResult, error)
+	Verify(interface{}) error
+	PairSupported(pair structs.Pair) bool
 }
 
 func BuildProvider(providerName string, auth string) (*TradeProvider, error) {

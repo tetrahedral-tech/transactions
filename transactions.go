@@ -20,8 +20,6 @@ func runTransactions(database mongo.Database) error {
 		return err
 	}
 
-	fmt.Println(algorithmIdToName)
-
 	buildTransaction := func(account structs.Account, algorithmSignals map[string]structs.AlgorithmSignal) (*structs.TransactionInfo, error) {
 		algorithmName, ok := algorithmIdToName[account.Algorithm]
 		if !ok {
@@ -31,6 +29,10 @@ func runTransactions(database mongo.Database) error {
 		signal, ok := algorithmSignals[algorithmName]
 		if !ok {
 			return nil, fmt.Errorf("algorithm name not found in algorithm to signal map: %v", algorithmName)
+		}
+
+		if signal.Signal == structs.NoAction {
+			return nil, fmt.Errorf("signal is no action: %v %v", account, signal)
 		}
 
 		return &structs.TransactionInfo{
