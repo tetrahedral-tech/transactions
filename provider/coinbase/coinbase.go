@@ -1,21 +1,66 @@
 package coinbase
 
 import (
-	"errors"
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
-	"strings"
+	"time"
 	"transactions/structs"
 )
 
 type Provider struct {
-	baseUrl string
+	BaseUrl string
 	key     string
-	secret  string
 }
+
 type verification struct{}
+type auth struct {
+	Key        string
+	Signature  string
+	Timestamp  int64
+	Passphrase string
+}
+type signatureRouteData struct {
+	Method      string
+	RequestPath string
+	Body        map[string]string
+}
+
+func (provider Provider) generateSignature(routeData signatureRouteData) (*auth, error) {
+	timestamp := time.Now().Unix()
+
+	key, err := base64.StdEncoding.DecodeString(provider.key)
+	if err != nil {
+		return nil, err
+	}
+
+	marshalledBody, err := json.Marshal(routeData.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	message := []byte(fmt.Sprintf("%d%s%s%s", timestamp, routeData.Method, routeData.RequestPath, marshalledBody))
+
+	hash := hmac.New(sha256.New, key)
+	hash.Write(message)
+
+	return &auth{
+		Key:        provider.key,
+		Timestamp:  timestamp,
+		Passphrase: "", //@TODO maybe?
+		Signature:  base64.StdEncoding.EncodeToString(hash.Sum(nil)),
+	}, nil
+}
 
 func (provider Provider) Swap(account structs.Account, transaction structs.TransactionInfo) (*structs.TransactionResult, error) {
 	// @TODO
+	err := provider.Verify(nil)
+	if err != nil {
+		return nil, err
+	}
+
 	return new(structs.TransactionResult), nil
 }
 
@@ -32,32 +77,28 @@ func (provider Provider) Verify(dataInterface interface{}) error {
 
 	// @TODO
 
+	return fmt.Errorf("disabled temporarily")
 	return nil
 }
 
-func verifyAuthData(key string, secret string) error {
+func verifySecret(key string) (bool, error) {
 	// @TODO
-	return nil
+	return true, nil
 }
 
-func NewProvider(authData string) (*Provider, error) {
-	splitAuthData := strings.Split(authData, ":")
-	if len(splitAuthData) != 2 {
-		return nil, errors.New("invalid auth data format")
-	}
-
-	key := splitAuthData[0]
-	secret := splitAuthData[1]
-
+func NewProvider(key string) (*Provider, error) {
 	provider := Provider{
-		baseUrl: "@TODO",
+		BaseUrl: "https://api-public.sandbox.exchange.coinbase.com",
 		key:     key,
-		secret:  secret,
 	}
 
-	err := verifyAuthData(key, secret)
+	valid, err := verifySecret(key)
 	if err != nil {
 		return nil, err
+	}
+
+	if !valid {
+		return nil, fmt.Errorf("invalid auth data")
 	}
 
 	return &provider, nil
