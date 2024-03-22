@@ -12,13 +12,12 @@ type Status struct {
 }
 
 type Account struct {
-	ID                  primitive.ObjectID `bson:"_id"`
-	ProviderID          string             `bson:"address"` //@TODO update name
-	Algorithm           primitive.ObjectID `bson:"algorithm"`
-	EncryptedPrivateKey string             `bson:"encryptedPrivateKey"` //@TODO update name
-	Pair                Pair               `bson:"pair"`
-	Provider            string             `bson:"provider"`
-	Interval            int16              `bson:"interval"`
+	ID        primitive.ObjectID `bson:"_id"`
+	Algorithm primitive.ObjectID `bson:"algorithm"`
+	Auth      string             `bson:"encryptedPrivateKey"` //@TODO update name
+	Pair      Pair               `bson:"pair"`
+	Provider  string             `bson:"provider"`
+	Interval  int16              `bson:"interval"`
 }
 
 type Coin string

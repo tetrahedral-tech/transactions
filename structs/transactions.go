@@ -15,9 +15,10 @@ const (
 )
 
 type TransactionInfo struct {
-	Amount float64
-	Action TradeType
-	Pair   Pair
+	Amount   float64
+	Action   TradeType
+	Pair     Pair
+	Provider string
 }
 
 type TransactionResult struct {

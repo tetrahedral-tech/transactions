@@ -1,9 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
-	"transactions/provider"
+	"net/http"
+	"os"
 	"transactions/structs"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -36,9 +39,10 @@ func runTransactions(database mongo.Database) error {
 		}
 
 		return &structs.TransactionInfo{
-			Amount: signal.Amount * 10,
-			Action: signal.Signal,
-			Pair:   account.Pair,
+			Amount:   signal.Amount * 10,
+			Action:   signal.Signal,
+			Pair:     account.Pair,
+			Provider: account.Provider,
 		}, nil
 	}
 
@@ -57,24 +61,30 @@ func runTransactions(database mongo.Database) error {
 			continue
 		}
 
-		provider, err := provider.BuildProvider(account.Provider, account.EncryptedPrivateKey)
-		if err != nil {
-			fmt.Printf("error building provider: %v\n", err)
-			continue
-		}
-
 		transaction, err := buildTransaction(account, algorithmSignals)
 		if err != nil {
 			fmt.Printf("error building transaction: %v\n", err)
 			continue
 		}
 
-		swap, err := (*provider).Swap(account, *transaction)
+		marshalledTransaction, err := json.Marshal(transaction)
 		if err != nil {
-			fmt.Printf("error swapping: %v\n", err)
+			fmt.Printf("error unmarshalling transaction: %v\n", err)
+			continue
 		}
 
-		fmt.Printf("swap executed: %v %v\n", swap, account)
+		transactorUri, ok := os.LookupEnv("TRANSACTOR_URI")
+		if !ok {
+			panic("DB_URI is not in .env")
+		}
+
+		swap, err := http.Post(fmt.Sprintf("%s/transact", transactorUri), "application/json", bytes.NewBuffer(marshalledTransaction))
+		if err != nil {
+			fmt.Printf("error sending transaction to transactor: %v\n", err)
+			continue
+		}
+
+		fmt.Printf("transaction sent: %v %v\n", swap, account)
 	}
 
 	if err := cursor.Err(); err != nil {
