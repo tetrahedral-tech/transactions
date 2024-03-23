@@ -47,7 +47,7 @@ func main() {
 		panic("DB_URI is not in .env")
 	}
 
-	_, ok = os.LookupEnv("TRANSACTOR_URI")
+	_, ok = os.LookupEnv("TRANSACTION_ROUTER_URI")
 	if !ok {
 		panic("DB_URI is not in .env")
 	}
